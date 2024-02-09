@@ -21,7 +21,7 @@
             </div>
             <div class="mt-6 flex justify-end">
                 <SecondaryButton @click="closeModal">Cancel</SecondaryButton>
-                <PrimaryButton @click="createFolder" :disable="form.processing"
+                <PrimaryButton @click="createFolder" :disabled="form.processing"
                                class="ml-3"
                                :class="{ 'opacity-25': form.processing }">
                     Submit
@@ -36,9 +36,9 @@ import Modal from "@/Components/Modal.vue";
 import InputLabel from "@/Components/InputLabel.vue";
 import TextInput from "@/Components/TextInput.vue";
 import InputError from "@/Components/InputError.vue";
-import {useForm, usePage} from "@inertiajs/vue3";
 import SecondaryButton from "@/Components/SecondaryButton.vue";
 import PrimaryButton from "@/Components/PrimaryButton.vue";
+import {useForm, usePage} from "@inertiajs/vue3";
 import {nextTick, ref} from "vue";
 
 const form = useForm({
@@ -61,9 +61,9 @@ function createFolder() {
         onSuccess: () => {
             closeModal();
             // show success notification
-
         },
-        onError: () => folderNameInput.value.focus()
+        onError: () => folderNameInput.value.focus(),
+        onFinish: () => form.reset(),
     });
 }
 

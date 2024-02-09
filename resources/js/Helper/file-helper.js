@@ -14,7 +14,6 @@ export function isPDF(file) {
 }
 
 export function isAudio(file) {
-    console.log('mime: ', file.mime);
     return [
         'audio/mpeg',
         'audio/ogg',
