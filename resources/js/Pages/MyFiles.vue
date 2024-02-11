@@ -1,6 +1,6 @@
 <template>
     <AuthenticatedLayout>
-        <nav class="flex items-center justify-between p-1 mb-3">
+        <nav class="flex items-center justify-between p-1 mb-2">
             <ol class="inline-flex items-center space-x-1 md:space-x-2">
                 <li v-for="ans of ancestors.data" :key="ans.id" class="inline-flex items-center">
                     <Link v-if="!ans.parent_id" :href="route('myFiles')"
@@ -17,13 +17,17 @@
                     </div>
                 </li>
             </ol>
+            <div>
+                <DownloadFilesButton :all="allSelected" :ids="selectedIds" class="mr-2 capitalize"/>
+                <DeleteFilesButton :delete-all="allSelected" :delete-ids="selectedIds" @delete="onDelete"/>
+            </div>
         </nav>
         <div class="flex-1 overflow-auto">
             <table class="min-w-full relative" id="MyFilesTable">
                 <thead class="bg-gray-100 border-b">
                 <tr>
                     <th class="text-sm font-medium text-gray-900 py-4 px-4 text-left w-[25px] max-w-[25px]">
-                        <Checkbox @change="onSelectAllChange" v-model:checked="allSelected" class="focus:ring-0"/>
+                        <Checkbox @change="onSelectAllChange" v-model:checked="allSelected" class="focus:ring-0 cursor-pointer"/>
                     </th>
                     <th class="text-sm font-medium text-gray-900 py-4 px-4 text-left">Name</th>
                     <th class="text-sm font-medium text-gray-900 py-4 px-4 text-left">Owner</th>
@@ -40,7 +44,7 @@
                 >
                     <td class="text-sm font-medium text-gray-900 w-[25px] max-w-[25px]">
                         <Checkbox @change="onSelectCheckboxChange(file)" v-model="selected[file.id]"
-                                  :checked="selected[file.id] || allSelected" class="focus:ring-0"/>
+                                  :checked="selected[file.id] || allSelected" class="focus:ring-0 cursor-pointer"/>
                     </td>
                     <td class="text-sm font-medium text-gray-900 flex items-center">
                         <FileIcon :file="file"/>
@@ -70,9 +74,11 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import FileIcon from "@/Components/app/FileIcon.vue";
 import Checkbox from "@/Components/Checkbox.vue";
+import DeleteFilesButton from "@/Components/app/DeleteFilesButton.vue";
+import DownloadFilesButton from "@/Components/app/DownloadFilesButton.vue";
 import {Link, router} from "@inertiajs/vue3";
 import {HomeIcon, ChevronRightIcon} from "@heroicons/vue/20/solid/index.js";
-import {onMounted, onUpdated, ref} from "vue";
+import {computed, onMounted, onUpdated, ref} from "vue";
 import {httpGet} from "@/Helper/http-helper.js";
 
 // Props & Emit
@@ -92,13 +98,10 @@ const allFiles = ref({
     next: props.files.links.next
 });
 
-// Methods
-function onSelectAllChange() {
-    allFiles.value.data.forEach((f) => {
-        selected.value[f.id] = allSelected.value;
-    })
-}
+// Computed
+const selectedIds = computed(() => Object.entries(selected.value).filter(a => a[1]).map(a => a[0]));
 
+// Methods
 const openFolder = (file) => {
     if (!file.is_folder) {
         return;
@@ -121,15 +124,35 @@ function loadMore() {
 
 }
 
+function onSelectAllChange() {
+    allFiles.value.data.forEach((f) => {
+        selected.value[f.id] = allSelected.value;
+    })
+}
+
 function onSelectCheckboxChange(file) {
     if (!selected.value[file.id]) {
         allSelected.value = false;
+    } else {
+        let checked = true;
+        for (let file of allFiles.value.data) {
+            if (!selected.value[file.id]) {
+                checked = false;
+                break;
+            }
+        }
+        allSelected.value = checked;
     }
 }
 
 function toggleFileSelect(file) {
     selected.value[file.id] = !selected.value[file.id];
     onSelectCheckboxChange(file);
+}
+
+function onDelete() {
+    allSelected.value = false;
+    selected.value = {};
 }
 
 // Hooks
