@@ -35,7 +35,7 @@ import FormProgress from "@/Components/app/FormProgress.vue";
 import ErrorDialog from "@/Components/ErrorDialog.vue";
 import Notification from "@/Components/Notification.vue";
 import {onMounted, ref} from "vue";
-import {emitter, FILE_UPLOAD_STARTED, showErrorDialog, showSuccessNotification} from "@/event-bus.js";
+import {emitter, FILE_UPLOAD_STARTED, showSuccessNotification, showErrorDialog} from "@/event-bus.js";
 import {useForm, usePage} from "@inertiajs/vue3";
 
 // Uses
@@ -69,7 +69,7 @@ const uploadFiles = (files) => {
     fileUploadForm.files = files;
     fileUploadForm.parent_id = page.props.folder.id;
     fileUploadForm.relative_paths = [...files].map(f => f.webkitRelativePath);
-
+    console.log(Ziggy.routes);
     fileUploadForm.post(route('file.store'), {
         onSuccess: () => {
             showSuccessNotification(`${files.length} files have been uploaded`);
@@ -81,7 +81,7 @@ const uploadFiles = (files) => {
             } else {
                 message = 'Error during file upload. Please try again later.';
             }
-            showErrorDialog(message);
+            showErrorDialog(message, 'Upload error');
         },
         onFinish: () => {
             fileUploadForm.clearErrors().reset();

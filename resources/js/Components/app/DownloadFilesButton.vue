@@ -12,6 +12,7 @@
 <script setup>
 // Imports
 import PrimaryButton from "@/Components/PrimaryButton.vue";
+import {showErrorNotification, showSuccessNotification} from "@/event-bus.js";
 import {usePage} from "@inertiajs/vue3";
 import {httpGet} from "@/Helper/http-helper.js";
 
@@ -53,7 +54,15 @@ function download() {
 
     httpGet(route('file.download') + '?' + p.toString())
         .then(res => {
-            if (!res.url || !res.filename) return;
+            if (!res.url || !res.filename) {
+                if (res.message) {
+                    showErrorNotification(res.message);
+                }
+                return;
+            }
+            if (res.filesAdded) {
+                showSuccessNotification(`${res.filesAdded} file(s) to be downloaded`);
+            }
             const a = document.createElement('a');
             a.download = res.filename;
             a.href = res.url;

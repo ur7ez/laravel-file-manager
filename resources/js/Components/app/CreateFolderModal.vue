@@ -15,6 +15,7 @@
                            :class="form.errors.name ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''"
                            placeholder="Folder Name"
                            @keyup.enter="createFolder"
+                           @keyup.esc="closeModal"
                 />
                 <InputError class="mt-2" :message="form.errors.name"/>
 

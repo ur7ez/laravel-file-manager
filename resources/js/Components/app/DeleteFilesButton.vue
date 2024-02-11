@@ -54,7 +54,7 @@ const emit = defineEmits(['delete']);
 // Methods
 function onDeleteClick() {
     if (!props.deleteAll && !props.deleteIds.length) {
-        showErrorDialog('Please select at least one file to delete');
+        showErrorDialog('Please select at least one file to delete', 'Deletion error');
         return;
     }
     showDeleteDialog.value = true;
@@ -68,6 +68,7 @@ function onDeleteConfirm() {
     deleteFilesForm.parent_id = page.props.folder.id;
     if (props.deleteAll) {
         deleteFilesForm.all = true;
+        deleteFilesForm.ids = [];
     } else {
         deleteFilesForm.all = false;
         deleteFilesForm.ids = props.deleteIds;
@@ -76,7 +77,7 @@ function onDeleteConfirm() {
         onSuccess: () => {
             showDeleteDialog.value = false;
             emit('delete');
-            showSuccessNotification('Selected files have been deleted');
+            showSuccessNotification('Selected items have been deleted');
         }
     });
 }

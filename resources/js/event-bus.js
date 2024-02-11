@@ -6,8 +6,8 @@ export const SHOW_NOTIFICATION = 'SHOW_NOTIFICATION';
 
 export const emitter = mitt();
 
-export function showErrorDialog(message) {
-    emitter.emit(SHOW_ERROR_DIALOG, {message});
+export function showErrorDialog(message, title) {
+    emitter.emit(SHOW_ERROR_DIALOG, {message, title});
 }
 
 export function showSuccessNotification (message) {
