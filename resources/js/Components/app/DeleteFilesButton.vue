@@ -20,7 +20,7 @@
 <script setup>
 // Imports
 import {ref} from "vue";
-import ConfirmationDialog from "@/Components/app/ConfirmationDialog.vue";
+import ConfirmationDialog from "@/Components/ConfirmationDialog.vue";
 import {showErrorDialog, showSuccessNotification} from "@/event-bus.js";
 import {useForm, usePage} from "@inertiajs/vue3";
 

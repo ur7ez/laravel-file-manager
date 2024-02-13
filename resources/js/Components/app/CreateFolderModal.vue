@@ -1,5 +1,5 @@
 <template>
-    <Modal :show="modelValue" @show="onShow" max-width="sm">
+    <Modal :show="modelValue" @show="onShow" @close="closeModal" max-width="sm">
         <div class="p-6">
             <h2 class="text-lg font-medium text-gray-900">
                 Create New Folder
@@ -43,6 +43,7 @@ import SecondaryButton from "@/Components/SecondaryButton.vue";
 import PrimaryButton from "@/Components/PrimaryButton.vue";
 import {useForm, usePage} from "@inertiajs/vue3";
 import {nextTick, ref} from "vue";
+import {showSuccessNotification} from "@/event-bus.js";
 
 // Refs
 const form = useForm({
@@ -66,7 +67,7 @@ function createFolder() {
         preserveScroll: true,
         onSuccess: () => {
             closeModal();
-            // show success notification
+            showSuccessNotification(`New folder "${form.name}" has been created`);
         },
         onError: () => folderNameInput.value.focus(),
         onFinish: () => form.reset(),
@@ -75,7 +76,8 @@ function createFolder() {
 
 function closeModal() {
     emit('update:modelValue');
-    form.clearErrors().reset();
+    form.clearErrors()
+    // form.reset();
 }
 
 const onShow = (e) => {

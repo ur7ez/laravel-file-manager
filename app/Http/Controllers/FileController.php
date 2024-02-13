@@ -4,20 +4,26 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\AddToFavouritesRequest;
 use App\Http\Requests\FilesActionRequest;
+use App\Http\Requests\ShareFilesRequest;
 use App\Http\Requests\StoreFileRequest;
 use App\Http\Requests\StoreFolderRequest;
 use App\Http\Requests\TrashFilesRequest;
 use App\Http\Resources\FileResource;
+use App\Mail\ShareFilesMail;
 use App\Models\File;
+use App\Models\FileShare;
 use App\Models\StarredFile;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use ZipArchive;
 
@@ -250,6 +256,66 @@ class FileController extends Controller
             ]);
         }
 
+        return redirect()->back();
+    }
+
+    public function share(ShareFilesRequest $request)
+    {
+        $data = $request->validated();
+        /** @var File $parent */
+        $parent = $request->parent;
+
+        $all = $data['all'] ?? false;
+        $email = $data['email'] ?? '';
+        $ids = $data['ids'] ?? [];
+
+        if (!$all && empty($ids)) {
+            return [
+                'message' => 'Please select at least one file to share',
+            ];
+        }
+        $user = User::query()->where('email', $email)->first();
+
+        if (!$user) {
+            return redirect()->back();
+        }
+        if ($user->id === Auth::id()) {
+            throw ValidationException::withMessages([
+                'email' => "You can't share files with yourself. Please specify other users' email"
+            ]);
+        }
+
+        if ($all) {
+            $files = $parent->children;
+        } else {
+            $files = File::find($ids);
+        }
+
+        $data = [];
+        $ids = Arr::pluck($files, 'id');
+        $sharedBefore = FileShare::query()
+            ->whereIn('file_id', $ids)
+            ->where('user_id', $user->id)
+            ->get()
+            ->keyBy('file_id');
+        $sharedFiles = new Collection();
+        foreach ($files as $file) {
+            if ($sharedBefore->has($file->id)) {
+                continue;
+            }
+            $data[] = [
+                'file_id' => $file->id,
+                'user_id' => $user->id,
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ];
+            $sharedFiles->add($file);
+        }
+        if ($data) {
+            FileShare::insert($data);
+            // send email to user:
+            Mail::to($user)->send(new ShareFilesMail($user, Auth::user(), $sharedFiles));
+        }
         return redirect()->back();
     }
 

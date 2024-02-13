@@ -23,6 +23,7 @@
                               class="cursor-pointer mr-1"/>
                     Only Favourites
                 </label>
+                <ShareFilesButton :all-selected="allSelected" :selected-ids="selectedIds"/>
                 <DownloadFilesButton :all="allSelected" :ids="selectedIds" class="mr-2 capitalize"/>
                 <DeleteFilesButton :delete-all="allSelected" :delete-ids="selectedIds" @delete="onDelete"/>
             </div>
@@ -101,7 +102,8 @@ import FileIcon from "@/Components/app/FileIcon.vue";
 import Checkbox from "@/Components/Checkbox.vue";
 import DeleteFilesButton from "@/Components/app/DeleteFilesButton.vue";
 import DownloadFilesButton from "@/Components/app/DownloadFilesButton.vue";
-import {Link, router, useForm} from "@inertiajs/vue3";
+import ShareFilesButton from "@/Components/app/ShareFilesButton.vue";
+import {Link, router} from "@inertiajs/vue3";
 import {HomeIcon, ChevronRightIcon} from "@heroicons/vue/20/solid/index.js";
 import {computed, onMounted, onUpdated, ref} from "vue";
 import {httpGet, httpPost} from "@/Helper/http-helper.js";
