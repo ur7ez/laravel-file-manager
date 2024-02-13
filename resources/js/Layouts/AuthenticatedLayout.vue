@@ -69,7 +69,6 @@ const uploadFiles = (files) => {
     fileUploadForm.files = files;
     fileUploadForm.parent_id = page.props.folder.id;
     fileUploadForm.relative_paths = [...files].map(f => f.webkitRelativePath);
-    console.log(Ziggy.routes);
     fileUploadForm.post(route('file.store'), {
         onSuccess: () => {
             showSuccessNotification(`${files.length} files have been uploaded`);

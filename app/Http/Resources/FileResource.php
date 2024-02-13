@@ -26,6 +26,7 @@ class FileResource extends JsonResource
             'mime' => $this->mime,
             'size' => $this->size ? Number::fileSize($this->size, 2) : $this->size,
             'owner' => $this->owner,
+            'is_favourite' => (bool) $this->starred,
             'created_at' => $this->created_at->diffForHumans(),
             'updated_at' => $this->updated_at->diffForHumans(),
             'created_by' => $this->created_by,

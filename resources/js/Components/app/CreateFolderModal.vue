@@ -11,11 +11,13 @@
                            ref="folderNameInput"
                            id="folderName"
                            v-model="form.name"
+                           @input="validateFolderName"
                            class="mt-1 block w-full"
                            :class="form.errors.name ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''"
-                           placeholder="Folder Name"
+                           pattern="[a-zA-Z0-9\s!_=\)\(+\-]+"
+                           title="Only alphanumeric characters, hyphens, and underscores are allowed"
+                           placeholder="enter Folder Name"
                            @keyup.enter="createFolder"
-                           @keyup.esc="closeModal"
                 />
                 <InputError class="mt-2" :message="form.errors.name"/>
 
@@ -42,6 +44,7 @@ import PrimaryButton from "@/Components/PrimaryButton.vue";
 import {useForm, usePage} from "@inertiajs/vue3";
 import {nextTick, ref} from "vue";
 
+// Refs
 const form = useForm({
     name: '',
     parent_id: null
@@ -50,11 +53,13 @@ const page = usePage();
 
 const folderNameInput = ref(null);
 
+// Props & Emit
 const {modelValue} = defineProps({
     modelValue: Boolean
 })
 const emit = defineEmits(['update:modelValue']);
 
+// Methods
 function createFolder() {
     form.parent_id = page.props.folder.id;
     form.post(route('folder.create'), {
@@ -76,4 +81,11 @@ function closeModal() {
 const onShow = (e) => {
     nextTick(() => folderNameInput.value.focus());
 }
+
+function validateFolderName() {
+    // Remove invalid characters using a regular expression
+    form.name = form.name.replace(/[^a-zA-Z0-9\s!_=\)\(+\-]/g, "");
+}
+
+// Hooks
 </script>
