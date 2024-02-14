@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Number;
@@ -21,11 +22,13 @@ class FileResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'path' => $this->path,
+            'folder' => $this->folder,
             'parent_id' => $this->parent_id,
             'is_folder' => $this->is_folder,
             'mime' => $this->mime,
             'size' => $this->size ? Number::fileSize($this->size, 2) : $this->size,
             'owner' => $this->owner,
+            'shared_with' => $this->shared_with ? User::find($this->shared_with)->name : null,
             'is_favourite' => (bool) $this->starred,
             'created_at' => $this->created_at->diffForHumans(),
             'updated_at' => $this->updated_at->diffForHumans(),

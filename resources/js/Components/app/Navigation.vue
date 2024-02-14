@@ -23,9 +23,4 @@ import ApplicationLogo from '@/Components/ApplicationLogo.vue';
 import CreateNewDropdown from "@/Components/app/CreateNewDropdown.vue";
 import NavLink from "@/Components/NavLink.vue";
 
-const props = defineProps({
-    createOrUploadEnabled: {
-        type: Boolean,
-    },
-})
 </script>

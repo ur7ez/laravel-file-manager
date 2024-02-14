@@ -20,6 +20,13 @@ class File extends Model
 {
     use HasFactory, HasCreatorAndUpdater, NodeTrait, SoftDeletes;
 
+    protected $appends = ['folder'];
+
+    public function getFolderAttribute()
+    {
+        return $this->is_folder ? $this->name : pathinfo($this->path, PATHINFO_DIRNAME);
+    }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
@@ -102,7 +109,7 @@ class File extends Model
     public static function getSharedByMe(): Builder
     {
         return self::query()
-            ->select('files.*')
+            ->select(['files.*', 'file_shares.user_id as shared_with'])
             ->join('file_shares', 'files.id', '=', 'file_shares.file_id')
             ->where('files.created_by', Auth::id())
             ->orderByDesc('file_shares.created_at')

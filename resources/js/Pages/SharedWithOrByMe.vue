@@ -19,6 +19,8 @@
                     </th>
                     <th class="text-sm font-medium text-gray-900 py-4 px-4 text-left">Name</th>
                     <th class="text-sm font-medium text-gray-900 py-4 px-4 text-left">Path</th>
+                    <th v-if="sharedWithMe" class="text-sm font-medium text-gray-900 py-4 px-4 text-left">Owner</th>
+                    <th v-if="sharedByMe" class="text-sm font-medium text-gray-900 py-4 px-4 text-left">Shared With</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -35,9 +37,9 @@
                         <FileIcon :file="file"/>
                         {{ file.name }}
                     </td>
-                    <td class="text-sm font-medium text-gray-900">
-                        {{ file.path }}
-                    </td>
+                    <td class="text-sm font-medium text-gray-900">{{ file.folder }}</td>
+                    <td v-if="sharedWithMe" class="text-sm font-medium text-gray-900 capitalize">{{ file.owner }}</td>
+                    <td v-if="sharedByMe" class="text-sm font-medium text-gray-900 capitalize">{{ file.shared_with }}</td>
                 </tr>
                 </tbody>
             </table>

@@ -38,6 +38,7 @@
                     </th>
                     <th class="text-sm font-medium text-gray-900 py-4 px-4 text-left"></th>
                     <th class="text-sm font-medium text-gray-900 py-4 px-4 text-left">Name</th>
+                    <th v-if="search" class="text-sm font-medium text-gray-900 py-4 px-4 text-left">Folder</th>
                     <th class="text-sm font-medium text-gray-900 py-4 px-4 text-left">Owner</th>
                     <th class="text-sm font-medium text-gray-900 py-4 px-4 text-left">Last Modified</th>
                     <th class="text-sm font-medium text-gray-900 py-4 px-4 text-left">Size</th>
@@ -74,6 +75,9 @@
                     <td class="text-sm font-medium text-gray-900 flex items-center">
                         <FileIcon :file="file"/>
                         {{ file.name }}
+                    </td>
+                    <td v-if="search" class="text-sm font-medium text-gray-900">
+                        {{ file.folder }}
                     </td>
                     <td class="whitespace-nowrap text-sm font-medium text-gray-900">
                         {{ file.owner }}
@@ -121,11 +125,13 @@ const allSelected = ref(false);
 const onlyFavourites = ref(false);
 const selected = ref({});
 const loadMoreIntersect = ref(null);
+let search = ref('');
 
 const allFiles = ref({
     data: props.files.data,
     next: props.files.links.next
 });
+
 let params = null;
 
 // Computed
@@ -204,7 +210,7 @@ function showOnlyFavourites() {
     } else {
         params.delete('favourites');
     }
-    router.get(window.location.pathname + '?' + params.toString());
+    router.get(window.location.pathname, params);
 }
 
 // Hooks
@@ -218,6 +224,7 @@ onUpdated(() => {
 onMounted(() => {
     params = new URLSearchParams(window.location.search);
     onlyFavourites.value = params.get('favourites') === '1';
+    search.value = params.get('search');
 
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => entry.isIntersecting && loadMore())

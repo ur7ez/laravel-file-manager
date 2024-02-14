@@ -33,6 +33,7 @@ class FileController extends Controller
 
     public function myFiles(Request $request, string $folder = null)
     {
+        $search = $request->get('search');
         if ($folder) {
             $folder = File::query()
                 ->where('created_by', Auth::id())
@@ -49,13 +50,17 @@ class FileController extends Controller
             ->select('files.*')
             ->with('starred')
             ->where('created_by', Auth::id())
-            ->where('parent_id', $folder->id)
-            ->where('_lft', '!=', 1)
+            ->where('parent_id', 'IS NOT', null) // exclude root folder
             ->orderByDesc('is_folder')
             ->orderByRaw('LENGTH(name), name')
             ->orderByDesc('files.created_at')
             ->orderByDesc('files.id');
 
+        if ($search) {
+            $query->where('files.name', 'like', "%$search%");
+        } else {
+            $query->where('parent_id', $folder->id);
+        }
         if ($favourites === 1) {
             $query->join('starred_files', 'files.id', '=', 'starred_files.file_id')
                 ->where('starred_files.user_id', Auth::id());
@@ -76,12 +81,17 @@ class FileController extends Controller
 
     public function trash(Request $request)
     {
+        $search = $request->get('search');
+
         $query = File::onlyTrashed()
             ->where('created_by', Auth::id())
             ->orderByDesc('is_folder')
             ->orderByDesc('deleted_at')
             ->orderByDesc('files.id');
 
+        if ($search) {
+            $query->where('files.name', 'like', "%$search%");
+        }
         $files = $query->paginate(10);
         $files = FileResource::collection($files);
 
@@ -90,6 +100,40 @@ class FileController extends Controller
         }
 
         return Inertia::render('Trash', compact('files'));
+    }
+
+    public function sharedWithMe(Request $request)
+    {
+        $search = $request->get('search');
+        $query = File::getSharedWithMe();
+        if ($search) {
+            $query->where('files.name', 'like', "%$search%");
+        }
+        $files = $query->paginate(10);
+        $files = FileResource::collection($files);
+
+        if ($request->wantsJson()) {
+            return $files;
+        }
+        $sharedWithMe = true;
+        return Inertia::render('SharedWithOrByMe', compact('files', 'sharedWithMe'));
+    }
+
+    public function sharedByMe(Request $request)
+    {
+        $search = $request->get('search');
+        $query = File::getSharedByMe();
+        if ($search) {
+            $query->where('files.name', 'like', "%$search%");
+        }
+        $files = $query->paginate(10);
+        $files = FileResource::collection($files);
+
+        if ($request->wantsJson()) {
+            return $files;
+        }
+        $sharedByMe = true;
+        return Inertia::render('SharedWithOrByMe', compact('files', 'sharedByMe'));
     }
 
     public function restore(TrashFilesRequest $request)
@@ -298,34 +342,6 @@ class FileController extends Controller
             Mail::to($user)->send(new ShareFilesMail($user, Auth::user(), $sharedFiles));
         }
         return redirect()->back();
-    }
-
-    public function sharedWithMe(Request $request)
-    {
-        $query = File::getSharedWithMe();
-
-        $files = $query->paginate(10);
-        $files = FileResource::collection($files);
-
-        if ($request->wantsJson()) {
-            return $files;
-        }
-        $sharedWithMe = true;
-        return Inertia::render('SharedWithOrByMe', compact('files', 'sharedWithMe'));
-    }
-
-    public function sharedByMe(Request $request)
-    {
-        $query = File::getSharedByMe();
-
-        $files = $query->paginate(10);
-        $files = FileResource::collection($files);
-
-        if ($request->wantsJson()) {
-            return $files;
-        }
-        $sharedByMe = true;
-        return Inertia::render('SharedWithOrByMe', compact('files', 'sharedByMe'));
     }
 
     public function downloadSharedWithMe(FilesActionRequest $request): array

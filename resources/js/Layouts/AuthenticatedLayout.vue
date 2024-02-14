@@ -34,7 +34,7 @@ import UserSettingsDropdown from "@/Components/app/UserSettingsDropdown.vue";
 import FormProgress from "@/Components/app/FormProgress.vue";
 import ErrorDialog from "@/Components/ErrorDialog.vue";
 import Notification from "@/Components/Notification.vue";
-import {onMounted, ref} from "vue";
+import {computed, onMounted, ref} from "vue";
 import {emitter, FILE_UPLOAD_STARTED, showSuccessNotification, showErrorDialog} from "@/event-bus.js";
 import {useForm, usePage} from "@inertiajs/vue3";
 
@@ -51,12 +51,15 @@ const dragOver = ref(false);
 
 // Methods
 const onDragOver = () => {
-    dragOver.value = true;
+    dragOver.value = dropAllowed.value;
 }
 const onDragLeave = () => {
     dragOver.value = false;
 }
 const handleDrop = (ev) => {
+    if (!dropAllowed.value) {
+        return;
+    }
     dragOver.value = false;
     const files = ev.dataTransfer.files;
     if (!files.length) {
@@ -87,6 +90,11 @@ const uploadFiles = (files) => {
         }
     });
 }
+
+// Computed
+const dropAllowed = computed(() => {
+    return page.url.indexOf('/my-files') == 0;
+});
 
 // Hooks
 onMounted(() => {
