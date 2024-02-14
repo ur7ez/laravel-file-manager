@@ -2,7 +2,7 @@
     <Menu as="div" class="relative block text-left">
         <MenuButton
             class="flex w-full justify-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
-            :disabled="$page.url !== '/my-files'"
+            :disabled="!menuActive"
         >
             Create Or Upload
         </MenuButton>
@@ -41,11 +41,17 @@ import {Menu, MenuButton, MenuItems, MenuItem} from '@headlessui/vue'
 import CreateFolderModal from "@/Components/app/CreateFolderModal.vue";
 import FileUploadMenuItem from "@/Components/app/FileUploadMenuItem.vue";
 import FolderUploadMenuItem from "@/Components/app/FolderUploadMenuItem.vue";
-import {ref} from "vue";
+import {computed, ref} from "vue";
+import {usePage} from "@inertiajs/vue3";
 
 const createFolderModal = ref(false);
 
 function showCreateFolderModal() {
     createFolderModal.value = true;
 }
+
+const page = usePage();
+const menuActive = computed(() => {
+    return page.url.indexOf('/my-files') == 0;
+});
 </script>
