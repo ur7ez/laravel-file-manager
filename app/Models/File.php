@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Traits\HasCreatorAndUpdater;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -86,5 +87,25 @@ class File extends Model
                 Storage::delete($file->storage_path);
             }
         }
+    }
+
+    public static function getSharedWithMe(): Builder
+    {
+        return self::query()
+            ->select('files.*')
+            ->join('file_shares', 'files.id', '=', 'file_shares.file_id')
+            ->where('file_shares.user_id', Auth::id())
+            ->orderByDesc('file_shares.created_at')
+            ->orderByDesc('files.id');
+    }
+
+    public static function getSharedByMe(): Builder
+    {
+        return self::query()
+            ->select('files.*')
+            ->join('file_shares', 'files.id', '=', 'file_shares.file_id')
+            ->where('files.created_by', Auth::id())
+            ->orderByDesc('file_shares.created_at')
+            ->orderByDesc('files.id');
     }
 }

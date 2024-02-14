@@ -66,8 +66,8 @@ function createFolder() {
     form.post(route('folder.create'), {
         preserveScroll: true,
         onSuccess: () => {
-            closeModal();
             showSuccessNotification(`New folder "${form.name}" has been created`);
+            closeModal();
         },
         onError: () => folderNameInput.value.focus(),
         onFinish: () => form.reset(),
@@ -77,7 +77,7 @@ function createFolder() {
 function closeModal() {
     emit('update:modelValue');
     form.clearErrors()
-    // form.reset();
+    form.reset();
 }
 
 const onShow = (e) => {
