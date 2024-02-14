@@ -2,7 +2,11 @@
     <AuthenticatedLayout>
         <nav class="flex items-center justify-end p-1 mb-2">
             <div>
-                <DownloadFilesButton :all="allSelected" :ids="selectedIds" :shared-with-me="true" class="capitalize"/>
+                <DownloadFilesButton class="capitalize"
+                                     :all="allSelected" :ids="selectedIds"
+                                     :shared-with-me="props.sharedWithMe"
+                                     :shared-by-me="props.sharedByMe"
+                />
             </div>
         </nav>
         <div class="flex-1 overflow-auto">
@@ -10,7 +14,8 @@
                 <thead class="bg-gray-100 border-b">
                 <tr>
                     <th class="text-sm font-medium text-gray-900 py-4 px-4 text-left w-[25px] max-w-[25px]">
-                        <Checkbox @change="onSelectAllChange" v-model:checked="allSelected" class="focus:ring-0 cursor-pointer"/>
+                        <Checkbox @change="onSelectAllChange" v-model:checked="allSelected"
+                                  class="focus:ring-0 cursor-pointer"/>
                     </th>
                     <th class="text-sm font-medium text-gray-900 py-4 px-4 text-left">Name</th>
                     <th class="text-sm font-medium text-gray-900 py-4 px-4 text-left">Path</th>
@@ -57,8 +62,8 @@ import DownloadFilesButton from "@/Components/app/DownloadFilesButton.vue";
 // Props & Emit
 const props = defineProps({
     files: Object,
-    folder: Object,
-    ancestors: Object,
+    sharedWithMe: {type: Boolean, default: false},
+    sharedByMe: {type: Boolean, default: false},
 })
 
 // Refs
@@ -114,11 +119,6 @@ function onSelectCheckboxChange(file) {
 function toggleFileSelect(file) {
     selected.value[file.id] = !selected.value[file.id];
     onSelectCheckboxChange(file);
-}
-
-function resetForm() {
-    allSelected.value = false;
-    selected.value = {};
 }
 
 // Hooks

@@ -3,7 +3,6 @@
 namespace App\Http\Requests;
 
 use App\Models\File;
-use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 
@@ -23,15 +22,17 @@ class FilesActionRequest extends ParentIdBaseRequest
                 function ($attribute, $id, $fail) {
                     $file = File::query()
                         ->leftJoin('file_shares', 'file_shares.file_id', 'files.id')
-                        ->where('id', $id)
-                        ->where(function (Builder $query) {
+                        ->where('files.id', $id)
+                        ->where(function ($query) {
                             $query
-                                ->where(function (Builder $query) {
+                                ->where(function ($query) {
                                     $query
                                         ->where('files.created_by', Auth::id())
                                         ->orWhere('file_shares.user_id', Auth::id());
                                 });
-                        });
+                        })
+                        ->first();
+
                     if (!$file) {
                         $fail('Invalid ID "' . $id . '"');
                     }

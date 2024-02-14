@@ -195,7 +195,10 @@ class FileController extends Controller
             [$url, $filesAdded] = $this->createZip($parent->children);
             $filename = $parent->name . '.zip';
         } else {
-            [$url, $filesAdded, $filename]  = $this->getDownloadUrl($ids, $parent->name);
+            [$url, $filesAdded, $filename, $msg]  = $this->getDownloadUrl($ids, $parent->name);
+            if ($msg) {
+                return ['message' => $msg,];
+            }
         }
         if ($filesAdded === 0 && $this->_skipEmptyFolders) {
             return [
@@ -307,8 +310,8 @@ class FileController extends Controller
         if ($request->wantsJson()) {
             return $files;
         }
-
-        return Inertia::render('SharedWithMe', compact('files'));
+        $sharedWithMe = true;
+        return Inertia::render('SharedWithOrByMe', compact('files', 'sharedWithMe'));
     }
 
     public function sharedByMe(Request $request)
@@ -321,8 +324,8 @@ class FileController extends Controller
         if ($request->wantsJson()) {
             return $files;
         }
-
-        return Inertia::render('SharedWithMe', compact('files'));
+        $sharedByMe = true;
+        return Inertia::render('SharedWithOrByMe', compact('files', 'sharedByMe'));
     }
 
     public function downloadSharedWithMe(FilesActionRequest $request): array
@@ -343,7 +346,10 @@ class FileController extends Controller
             [$url, $filesAdded] = $this->createZip($files);
             $filename = $zipName . '.zip';
         } else {
-            [$url, $filesAdded, $filename] = $this->getDownloadUrl($ids, $zipName);
+            [$url, $filesAdded, $filename, $msg] = $this->getDownloadUrl($ids, $zipName);
+            if ($msg) {
+                return ['message' => $msg,];
+            }
         }
         if ($filesAdded === 0 && $this->_skipEmptyFolders) {
             return [
@@ -352,6 +358,38 @@ class FileController extends Controller
         }
         return compact('url', 'filename', 'filesAdded');
     }
+
+    public function downloadSharedByMe(FilesActionRequest $request): array
+    {
+        $data = $request->validated();
+
+        $all = $data['all'] ?? false;
+        $ids = $data['ids'] ?? [];
+
+        if (!$all && empty($ids)) {
+            return [
+                'message' => 'Please select files to download',
+            ];
+        }
+        $zipName = 'shared_by_me';
+        if ($all) {
+            $files = File::getSharedByMe()->get();
+            [$url, $filesAdded] = $this->createZip($files);
+            $filename = $zipName . '.zip';
+        } else {
+            [$url, $filesAdded, $filename, $msg] = $this->getDownloadUrl($ids, $zipName);
+            if ($msg) {
+                return ['message' => $msg,];
+            }
+        }
+        if ($filesAdded === 0 && $this->_skipEmptyFolders) {
+            return [
+                'message' => "There are no files in selected folders",
+            ];
+        }
+        return compact('url', 'filename', 'filesAdded');
+    }
+
     private function getRoot()
     {
         return File::query()->whereIsRoot()
@@ -446,7 +484,7 @@ class FileController extends Controller
             if ($file->is_folder) {
                 if ($file->children->count() === 0) {
                     return [
-                        'message' => "The folder '{$file->name}' is empty",
+                        '', '', '', "The folder '{$file->name}' is empty",
                     ];
                 }
                 [$url, $filesAdded] = $this->createZip($file->children);
@@ -464,6 +502,6 @@ class FileController extends Controller
             [$url, $filesAdded] = $this->createZip($files);
             $filename = $zipName . '.zip';
         }
-        return [$url, $filesAdded, $filename];
+        return [$url, $filesAdded, $filename, null];
     }
 }
