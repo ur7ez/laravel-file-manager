@@ -24,24 +24,21 @@ let params = null;
 
 // Methods
 function onSearch() {
-    params = new URLSearchParams(window.location.search);
     if (search.value) {
-        params.set('search', search.value)
+        params.set('search', search.value);
     } else {
         params.delete('search');
     }
-    emitter.emit(ON_SEARCH, search.value);
     searchInput.value.focus();
     router.get(window.location.pathname, params, {preserveState: true});
+
+    emitter.emit(ON_SEARCH, search.value);
 }
 
 // Hooks
 onMounted(() => {
     params = new URLSearchParams(window.location.search);
     search.value = params.get('search') ?? '';
-    emitter.on(ON_SEARCH, (value) => {
-        search.value = value
-    })
 })
 
 </script>

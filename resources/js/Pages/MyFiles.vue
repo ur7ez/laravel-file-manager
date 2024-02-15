@@ -211,7 +211,7 @@ function showOnlyFavourites() {
     } else {
         urlParams.delete('favourites');
     }
-    router.get(window.location.pathname, urlParams, {preserveState: true});
+    router.get(window.location.pathname, urlParams);
 }
 
 // Hooks
@@ -225,6 +225,7 @@ onUpdated(() => {
 onMounted(() => {
     urlParams = new URLSearchParams(window.location.search);
     onlyFavourites.value = urlParams.get('favourites') === '1';
+
     search.value = urlParams.get('search');
     emitter.on(ON_SEARCH, (value) => {
         search.value = value;
