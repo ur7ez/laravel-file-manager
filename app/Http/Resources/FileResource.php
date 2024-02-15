@@ -18,6 +18,10 @@ class FileResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        $sharedWith = null;
+        if ($this->shared_with) {
+            $sharedWith = User::find($this->shared_with);
+        }
         return [
             'id' => $this->id,
             'name' => $this->name,
@@ -28,7 +32,9 @@ class FileResource extends JsonResource
             'mime' => $this->mime,
             'size' => $this->size ? Number::fileSize($this->size, 2) : $this->size,
             'owner' => $this->owner,
-            'shared_with' => $this->shared_with ? User::find($this->shared_with)->name : null,
+            'owner_email' => User::find($this->created_by)->email,
+            'shared_with' => $sharedWith?->name,
+            'shared_with_email' => $sharedWith?->email,
             'is_favourite' => (bool) $this->starred,
             'created_at' => $this->created_at->diffForHumans(),
             'updated_at' => $this->updated_at->diffForHumans(),
