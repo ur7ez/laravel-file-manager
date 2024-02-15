@@ -226,8 +226,11 @@ onMounted(() => {
     onlyFavourites.value = params.get('favourites') === '1';
     search.value = params.get('search');
 
+    // in case of a larger table row vertical padding observer seem to fail checking for intersection
     const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => entry.isIntersecting && loadMore())
+        entries.forEach((entry) => {
+            entry.isIntersecting && loadMore();
+        })
     }, {
         rootMargin: '-250px 0px 0px 0px'
     })
@@ -236,15 +239,17 @@ onMounted(() => {
 </script>
 
 <style scoped>
-th {
-    position: sticky;
-    position: -webkit-sticky;
-    top: 0;
+table#MyFilesTable > tbody > tr > td {
+    padding: 0.5rem 1rem;
+}
+table#MyFilesTable th {
     background-color: rgb(243 244 246 / 1);
     border-bottom-width: 1px;
 }
 
-table#MyFilesTable > tbody > tr > td {
-    padding: 0.7rem 1rem;
+th {
+    position: sticky;
+    position: -webkit-sticky;
+    top: 0;
 }
 </style>

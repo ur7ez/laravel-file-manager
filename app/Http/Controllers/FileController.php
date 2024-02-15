@@ -50,14 +50,15 @@ class FileController extends Controller
             ->select('files.*')
             ->with('starred')
             ->where('created_by', Auth::id())
-            ->where('parent_id', 'IS NOT', null) // exclude root folder
             ->orderByDesc('is_folder')
             ->orderByRaw('LENGTH(name), name')
             ->orderByDesc('files.created_at')
             ->orderByDesc('files.id');
 
         if ($search) {
-            $query->where('files.name', 'like', "%$search%");
+            $query
+                ->where('parent_id', 'IS NOT', null) // exclude root folder
+                ->where('files.name', 'like', "%$search%");
         } else {
             $query->where('parent_id', $folder->id);
         }
