@@ -8,10 +8,10 @@
             <CreateNewDropdown/>
 
             <div class="py-3">
-                <NavLink :href="route('myFiles')" :active="$page.url === '/my-files'">My Files</NavLink>
-                <NavLink :href="route('file.sharedWithMe')" :active="$page.url === '/shared-with-me'">Shared with Me</NavLink>
-                <NavLink :href="route('file.sharedByMe')" :active="$page.url === '/shared-by-me'">Shared by Me</NavLink>
-                <NavLink :href="route('trash')" :active="$page.url === '/trash'">Trash</NavLink>
+                <NavLink :href="route('myFiles')" :active="currentRoute === 'myFiles'">My Files</NavLink>
+                <NavLink :href="route('file.sharedWithMe')" :active="currentRoute === 'file.sharedWithMe'">Shared with Me</NavLink>
+                <NavLink :href="route('file.sharedByMe')" :active="currentRoute === 'file.sharedByMe'">Shared by Me</NavLink>
+                <NavLink :href="route('trash')" :active="currentRoute === 'trash'">Trash</NavLink>
             </div>
         </div>
     </nav>
@@ -23,4 +23,5 @@ import ApplicationLogo from '@/Components/ApplicationLogo.vue';
 import CreateNewDropdown from "@/Components/app/CreateNewDropdown.vue";
 import NavLink from "@/Components/NavLink.vue";
 
+const currentRoute = route().current();
 </script>

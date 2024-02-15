@@ -109,9 +109,9 @@ import DownloadFilesButton from "@/Components/app/DownloadFilesButton.vue";
 import ShareFilesButton from "@/Components/app/ShareFilesButton.vue";
 import {Link, router} from "@inertiajs/vue3";
 import {HomeIcon, ChevronRightIcon} from "@heroicons/vue/20/solid/index.js";
-import {computed, onMounted, onUpdated, ref} from "vue";
+import {computed, onBeforeMount, onMounted, onUpdated, ref} from "vue";
 import {httpGet, httpPost} from "@/Helper/http-helper.js";
-import {showErrorNotification, showSuccessNotification} from "@/event-bus.js";
+import {emitter, ON_SEARCH, showErrorNotification, showSuccessNotification} from "@/event-bus.js";
 
 // Props & Emit
 const props = defineProps({
@@ -132,7 +132,7 @@ const allFiles = ref({
     next: props.files.links.next
 });
 
-let params = null;
+let urlParams = null;
 
 // Computed
 const selectedIds = computed(() => Object.entries(selected.value).filter(a => a[1]).map(a => a[0]));
@@ -205,12 +205,13 @@ function addRemoveFavourite(file) {
 }
 
 function showOnlyFavourites() {
+    urlParams = new URLSearchParams(window.location.search);
     if (onlyFavourites.value) {
-        params.set('favourites', 1);
+        urlParams.set('favourites', '1');
     } else {
-        params.delete('favourites');
+        urlParams.delete('favourites');
     }
-    router.get(window.location.pathname, params);
+    router.get(window.location.pathname, urlParams, {preserveState: true});
 }
 
 // Hooks
@@ -222,9 +223,12 @@ onUpdated(() => {
 })
 
 onMounted(() => {
-    params = new URLSearchParams(window.location.search);
-    onlyFavourites.value = params.get('favourites') === '1';
-    search.value = params.get('search');
+    urlParams = new URLSearchParams(window.location.search);
+    onlyFavourites.value = urlParams.get('favourites') === '1';
+    search.value = urlParams.get('search');
+    emitter.on(ON_SEARCH, (value) => {
+        search.value = value;
+    });
 
     // in case of a larger table row vertical padding observer seem to fail checking for intersection
     const observer = new IntersectionObserver((entries) => {

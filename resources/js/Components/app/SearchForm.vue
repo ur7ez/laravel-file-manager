@@ -15,6 +15,7 @@
 import TextInput from "@/Components/TextInput.vue";
 import {router, useForm} from "@inertiajs/vue3";
 import {onMounted, ref} from "vue";
+import {emitter, ON_SEARCH} from "@/event-bus.js";
 
 // Refs
 const search = ref('');
@@ -23,19 +24,24 @@ let params = null;
 
 // Methods
 function onSearch() {
+    params = new URLSearchParams(window.location.search);
     if (search.value) {
         params.set('search', search.value)
     } else {
         params.delete('search');
     }
+    emitter.emit(ON_SEARCH, search.value);
     searchInput.value.focus();
-    router.get(window.location.pathname, params, { preserveState: true });
+    router.get(window.location.pathname, params, {preserveState: true});
 }
 
 // Hooks
 onMounted(() => {
     params = new URLSearchParams(window.location.search);
     search.value = params.get('search') ?? '';
+    emitter.on(ON_SEARCH, (value) => {
+        search.value = value
+    })
 })
 
 </script>
