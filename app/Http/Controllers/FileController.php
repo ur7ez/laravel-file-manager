@@ -9,6 +9,7 @@ use App\Http\Requests\StoreFileRequest;
 use App\Http\Requests\StoreFolderRequest;
 use App\Http\Requests\TrashFilesRequest;
 use App\Http\Resources\FileResource;
+use App\Jobs\UploadFileToCloudJob;
 use App\Mail\ShareFilesMail;
 use App\Models\File;
 use App\Models\FileShare;
@@ -446,15 +447,20 @@ class FileController extends Controller
      */
     private function saveFile(UploadedFile $file, User $user, File $parent): void
     {
-        $storage_path = $file->store('/files/' . $user->id);
+        // force save file on local storage first (in case we have set default storage on some cloud)
+        $storage_path = $file->store('/files/' . $user->id, 'local');
         $model = new File();
         $model->storage_path = $storage_path;
         $model->is_folder = false;
         $model->name = $file->getClientOriginalName();
         $model->mime = $file->getMimeType();
         $model->size = $file->getSize();
+        $model->uploaded_on_cloud = 0;
 
         $parent->appendNode($model);
+
+        // Start b/g job to upload file on Cloud
+        UploadFileToCloudJob::dispatch($model);
     }
 
     private function createZip(Collection $files): array
@@ -466,7 +472,7 @@ class FileController extends Controller
         }
 
         $filesAdded = 0;
-        $zipFile = Storage::path($publicPath); // absolute path to public storage
+        $zipFile = Storage::path($publicPath); // absolute path to default public storage
         $zip = new ZipArchive();
 
         if ($zip->open($zipFile, ZipArchive::CREATE | ZipArchive::OVERWRITE) === true) {
