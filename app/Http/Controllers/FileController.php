@@ -21,6 +21,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -243,7 +244,7 @@ class FileController extends Controller
             [$url, $filesAdded] = $this->createZip($parent->children);
             $filename = $parent->name . '.zip';
         } else {
-            [$url, $filesAdded, $filename, $msg]  = $this->getDownloadUrl($ids, $parent->name);
+            [$url, $filesAdded, $filename, $msg] = $this->getDownloadUrl($ids, $parent->name);
             if ($msg) {
                 return ['message' => $msg,];
             }
@@ -536,11 +537,15 @@ class FileController extends Controller
                     $content = Storage::disk('local')->get($file->storage_path);
                 }
                 $dest = pathinfo($file->storage_path, PATHINFO_BASENAME);
-                Storage::disk('public')->put($dest, $content);  // and save file locally
+                // Log::debug('Getting content for file: ' . $file->storage_path);
 
-                $filesAdded = 1;
+                $res = Storage::disk('public')->put($dest, $content);  // and save file locally
+                // Log::debug(sprintf('Inserted in public disk: "%s". Success: %s', $dest, (int)$res));
+
                 $url = asset(Storage::disk('public')->url($dest));
+                // Log::debug("Logging URL: `$url`");
                 $filename = $file->name;
+                $filesAdded = 1;
             }
         } else {
             $files = File::query()->whereIn('id', $ids)->get();
