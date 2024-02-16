@@ -460,7 +460,7 @@ class FileController extends Controller
 
         $parent->appendNode($model);
 
-        if (env('FILESYSTEM_DISK') !== 'local') {
+        if (env('FILESYSTEM_DISK', 'local') !== 'local') {
             // Start b/g job to upload file to Cloud
             UploadFileToCloudJob::dispatch($model);
         }

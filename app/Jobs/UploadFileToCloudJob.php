@@ -29,9 +29,10 @@ class UploadFileToCloudJob implements ShouldQueue
     public function handle(): void
     {
         $model = $this->file;
+        $cloudSysName = env('FILESYSTEM_DISK');
         if (!$model->uploaded_on_cloud) {
             $localPath = Storage::disk('local')->path($model->storage_path);
-            Log::debug("Uploading file on S3. $localPath");
+            Log::debug("Uploading file on $cloudSysName. $localPath");
 
             try {
                 // may cause error for large files upload to S3 (see AWS PHP SDK for HashingStream::seek())
@@ -45,7 +46,7 @@ class UploadFileToCloudJob implements ShouldQueue
                     $model->saveQuietly();  // we can't update updated_by column in queue
                     // TODO: maybe need to delete file from local storage after uploading to Cloud
                 } else {
-                    Log::error('Unable to upload file to S3');
+                    Log::error("Unable to upload file to $cloudSysName");
                 }
             } catch (\Exception $e) {
                 Log::error($e->getMessage());
