@@ -42,7 +42,8 @@ class UploadFileToCloudJob implements ShouldQueue
                 if ($success) {
                     Log::debug('Uploaded. Updating the database');
                     $model->uploaded_on_cloud = 1;
-                    $model->save();
+                    $model->saveQuietly();  // we can't update updated_by column in queue
+                    // TODO: maybe need to delete from local storage
                 } else {
                     Log::error('Unable to upload file to S3');
                 }
