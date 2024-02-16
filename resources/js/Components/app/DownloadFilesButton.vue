@@ -1,5 +1,5 @@
 <template>
-    <PrimaryButton @click="download">
+    <PrimaryButton @click="download" title="click to download selected item(s)">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
              class="w-4 h-4 mr-1">
             <path stroke-linecap="round" stroke-linejoin="round"
@@ -12,7 +12,7 @@
 <script setup>
 // Imports
 import PrimaryButton from "@/Components/PrimaryButton.vue";
-import {showErrorNotification, showSuccessNotification} from "@/event-bus.js";
+import {showErrorDialog, showErrorNotification, showSuccessNotification} from "@/event-bus.js";
 import {usePage} from "@inertiajs/vue3";
 import {httpGet} from "@/Helper/http-helper.js";
 
@@ -41,14 +41,16 @@ const props = defineProps({
 // Methods
 function download() {
     if (!props.all && props.ids.length === 0) {
+        showErrorDialog('Please select at least one item to download', 'Download error');
         return;
     }
     const p = new URLSearchParams();
+    const existingParams = new URLSearchParams(window.location.search);
     if (page.props.folder?.id) {
         p.append('parent_id', page.props.folder.id);
     }
 
-    if (props.all) {
+    if (props.all && !(existingParams.get('search') || existingParams.get('favourites'))) {
         p.append('all', props.all ? 1 : 0);
     } else {
         for (let id of props.ids) {
@@ -56,7 +58,7 @@ function download() {
         }
     }
 
-    let url = route('file.download');
+    let url = route('file.download');  // download from My Files page only
     if (props.sharedWithMe) {
         url = route('file.downloadSharedWithMe');
     } else if (props.sharedByMe) {

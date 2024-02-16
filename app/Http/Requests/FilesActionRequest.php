@@ -25,16 +25,13 @@ class FilesActionRequest extends ParentIdBaseRequest
                         ->where('files.id', $id)
                         ->where(function ($query) {
                             $query
-                                ->where(function ($query) {
-                                    $query
-                                        ->where('files.created_by', Auth::id())
-                                        ->orWhere('file_shares.user_id', Auth::id());
-                                });
+                                ->where('files.created_by', Auth::id())
+                                ->orWhere('file_shares.user_id', Auth::id());
                         })
-                        ->first();
+                        ;
 
                     if (!$file) {
-                        $fail('Invalid ID "' . $id . '"');
+                        $fail('Item you are trying to download was removed by owner. Please refresh page to get the actual data');
                     }
                 }
             ],

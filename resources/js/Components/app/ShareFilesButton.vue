@@ -47,7 +47,7 @@ const props = defineProps({
 // Methods
 function onClick() {
     if (!props.allSelected && !props.selectedIds.length) {
-        showErrorDialog('Please select at least one file to share', 'Share files error');
+        showErrorDialog('Please select at least one item (file or folder) to share', 'Sharing Error');
         return;
     }
     showEmailsModal.value = true;

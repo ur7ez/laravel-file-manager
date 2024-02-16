@@ -82,6 +82,7 @@ class File extends Model
     public function deleteForever(): bool
     {
         $this->deleteFilesFromStorage([$this]);
+        // if item is shared with some user(s), or item is starred - its reference will be deleted by FK onDelete trigger
         return $this->forceDelete();
     }
 

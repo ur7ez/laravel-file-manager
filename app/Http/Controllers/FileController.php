@@ -228,8 +228,6 @@ class FileController extends Controller
     public function download(FilesActionRequest $request): array
     {
         $data = $request->validated();
-        /** @var File $parent */
-        $parent = $request->parent;
 
         $all = $data['all'] ?? false;
         $ids = $data['ids'] ?? [];
@@ -239,6 +237,8 @@ class FileController extends Controller
                 'message' => 'Please select files to download',
             ];
         }
+        /** @var File $parent */
+        $parent = $request->parent;
         if ($all) {
             [$url, $filesAdded] = $this->createZip($parent->children);
             $filename = $parent->name . '.zip';
@@ -291,12 +291,10 @@ class FileController extends Controller
     public function share(ShareFilesRequest $request)
     {
         $data = $request->validated();
-        /** @var File $parent */
-        $parent = $request->parent;
 
         $all = $data['all'] ?? false;
-        $email = $data['email'] ?? '';
         $ids = $data['ids'] ?? [];
+        $email = $data['email'] ?? '';
 
         if (!$all && empty($ids)) {
             return [
@@ -315,19 +313,20 @@ class FileController extends Controller
         }
 
         if ($all) {
+            /** @var File $parent */
+            $parent = $request->parent;
             $files = $parent->children;
         } else {
             $files = File::find($ids);
         }
-
         $data = [];
+        $sharedFiles = new Collection();
         $ids = Arr::pluck($files, 'id');
         $sharedBefore = FileShare::query()
             ->whereIn('file_id', $ids)
             ->where('user_id', $user->id)
             ->get()
             ->keyBy('file_id');
-        $sharedFiles = new Collection();
         foreach ($files as $file) {
             if ($sharedBefore->has($file->id)) {
                 continue;
@@ -505,14 +504,20 @@ class FileController extends Controller
                 } else {
                     $localPath = Storage::disk('local')->path($file->storage_path);
                 }
-                $zip->addFile($localPath, $ancestors . $file->name);
+                // if download from filtered data - we have only item ids. Files can be selected from different folders, thus we need to specify its folder - otherwise files with the same names will be overwritten in archive
+                if (!$ancestors && $file->folder !== '.') {
+                    $ancestors_ = ltrim($file->folder, '.') . '/';
+                } else {
+                    $ancestors_ = $ancestors;
+                }
+                $zip->addFile($localPath, $ancestors_ . $file->name);
                 $filesAdded++;
             }
         }
         return $filesAdded;
     }
 
-    private function getDownloadUrl(array $ids, string $zipName): array
+    private function getDownloadUrl(array $ids, string $zipName = 'download'): array
     {
         if (count($ids) === 1) {
             $file = File::find($ids[0]);
