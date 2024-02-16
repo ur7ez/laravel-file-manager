@@ -38,9 +38,9 @@
                     </th>
                     <th class="text-sm font-medium text-gray-900 py-4 px-4 text-left"></th>
                     <th class="text-sm font-medium text-gray-900 py-4 px-4 text-left">Name</th>
-                    <th v-if="search" class="text-sm font-medium text-gray-900 py-4 px-4 text-left">Folder</th>
+                    <th v-if="search || onlyFavourites" class="text-sm font-medium text-gray-900 py-4 px-4 text-left">Folder</th>
                     <th class="text-sm font-medium text-gray-900 py-4 px-4 text-left">Owner</th>
-                    <th class="text-sm font-medium text-gray-900 py-4 px-4 text-left">Last Modified</th>
+                    <th class="text-sm font-medium text-gray-900 py-4 px-4 text-left">Modified</th>
                     <th class="text-sm font-medium text-gray-900 py-4 px-4 text-left">Size</th>
                 </tr>
                 </thead>
@@ -76,7 +76,7 @@
                         <FileIcon :file="file"/>
                         {{ file.name }}
                     </td>
-                    <td v-if="search" class="text-sm font-medium text-gray-900">
+                    <td v-if="search || onlyFavourites" class="text-sm font-medium text-gray-900">
                         {{ file.folder }}
                     </td>
                     <td class="whitespace-nowrap text-sm font-medium text-gray-900">
@@ -149,7 +149,13 @@ function loadMore() {
     if (allFiles.value.next === null) {
         return;
     }
-    httpGet(allFiles.value.next)
+    // in search params need to add existing params (search or filter for favourites)
+    urlParams = new URLSearchParams(window.location.search);
+    let extraUrlParams = urlParams.toString();
+    if (extraUrlParams) {
+        extraUrlParams = "&" + extraUrlParams;
+    }
+    httpGet(allFiles.value.next + extraUrlParams)
         .then(res => {
             allFiles.value.data = [...allFiles.value.data, ...res.data];
             allFiles.value.next = res.links.next;
@@ -247,6 +253,7 @@ onMounted(() => {
 table#MyFilesTable > tbody > tr > td {
     padding: 0.5rem 1rem;
 }
+
 table#MyFilesTable th {
     background-color: rgb(243 244 246 / 1);
     border-bottom-width: 1px;

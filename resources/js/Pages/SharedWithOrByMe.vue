@@ -10,7 +10,7 @@
             </div>
         </nav>
         <div class="flex-1 overflow-auto">
-            <table class="min-w-full relative" id="MyTrashTable">
+            <table class="min-w-full relative" id="SharedItemsTable">
                 <thead class="bg-gray-100 border-b">
                 <tr>
                     <th class="text-sm font-medium text-gray-900 py-4 px-4 text-left w-[25px] max-w-[25px]">
@@ -92,7 +92,12 @@ function loadMore() {
     if (allFiles.value.next === null) {
         return;
     }
-    httpGet(allFiles.value.next)
+    let urlParams = new URLSearchParams(window.location.search);
+    let extraUrlParams = urlParams.toString();
+    if (extraUrlParams) {
+        extraUrlParams = "&" + extraUrlParams;
+    }
+    httpGet(allFiles.value.next + extraUrlParams)
         .then(res => {
             allFiles.value.data = [...allFiles.value.data, ...res.data];
             allFiles.value.next = res.links.next;
@@ -148,15 +153,18 @@ onMounted(() => {
 </script>
 
 <style scoped>
-th {
-    position: sticky;
-    position: -webkit-sticky;
-    top: 0;
+table#SharedItemsTable > tbody > tr > td {
+    padding: 0.5rem 1rem;
+}
+
+table#SharedItemsTable th {
     background-color: rgb(243 244 246 / 1);
     border-bottom-width: 1px;
 }
 
-table#MyTrashTable > tbody > tr > td {
-    padding: 0.7rem 1rem;
+th {
+    position: sticky;
+    position: -webkit-sticky;
+    top: 0;
 }
 </style>

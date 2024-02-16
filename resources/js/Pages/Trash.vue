@@ -79,7 +79,12 @@ function loadMore() {
     if (allFiles.value.next === null) {
         return;
     }
-    httpGet(allFiles.value.next)
+    let urlParams = new URLSearchParams(window.location.search);
+    let extraUrlParams = urlParams.toString();
+    if (extraUrlParams) {
+        extraUrlParams = "&" + extraUrlParams;
+    }
+    httpGet(allFiles.value.next + extraUrlParams)
         .then(res => {
             allFiles.value.data = [...allFiles.value.data, ...res.data];
             allFiles.value.next = res.links.next;
@@ -140,15 +145,18 @@ onMounted(() => {
 </script>
 
 <style scoped>
-th {
-    position: sticky;
-    position: -webkit-sticky;
-    top: 0;
+table#MyTrashTable > tbody > tr > td {
+    padding: 0.5rem 1rem;
+}
+
+table#MyTrashTable th {
     background-color: rgb(243 244 246 / 1);
     border-bottom-width: 1px;
 }
 
-table#MyTrashTable > tbody > tr > td {
-    padding: 0.7rem 1rem;
+th {
+    position: sticky;
+    position: -webkit-sticky;
+    top: 0;
 }
 </style>
